@@ -10,10 +10,10 @@ const DNAHelix = dynamic(
 );
 
 const NODE_COUNT = 6;
-// the scroll window (fraction of total home-page scroll) across which the helix
-// is the "main character" — nodes become active, chapters reveal, etc.
-const ACTIVE_START = 0.08;
-const ACTIVE_END = 0.85;
+// the scroll window (fraction of total home-page scroll) that roughly
+// corresponds to the ScrollJourney chapters — nodes light up in sync.
+const ACTIVE_START = 0.18;
+const ACTIVE_END = 0.7;
 
 export function HomeBackdrop() {
   const progressRef = useRef(0);

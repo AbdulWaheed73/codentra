@@ -146,21 +146,24 @@ function HelixBody({ progressRef, activeIndexRef }: HelixProps) {
 
   useFrame((state, delta) => {
     const rawProgress = progressRef.current;
-    smoothProgress.current = damp(smoothProgress.current, rawProgress, 5, delta);
+    // snappier smoothing so rotation responds to scroll with very little lag
+    smoothProgress.current = damp(smoothProgress.current, rawProgress, 10, delta);
     const p = smoothProgress.current;
 
     if (groupRef.current) {
-      // gentle scroll-driven rotation + slow ambient spin
+      // aggressive scroll-driven rotation — 4 full turns across the page scroll
+      // PLUS a small ambient spin so it's alive when the user stops
       groupRef.current.rotation.y =
-        p * Math.PI * 1.5 + state.clock.elapsedTime * 0.05;
+        p * Math.PI * 8 + state.clock.elapsedTime * 0.04;
       // subtle breathing tilt
       groupRef.current.rotation.x =
         Math.sin(state.clock.elapsedTime * 0.25) * 0.04;
       // vertical scan: strand scrolls from top of helix visible → bottom
-      // at p=0 we want top of helix near top of screen (group y = +range)
-      // at p=1 we want bottom of helix near bottom of screen (group y = -range)
       const range = HELIX_CONFIG.height / 2 - VISIBLE_HEIGHT / 2;
       groupRef.current.position.y = (0.5 - p) * 2 * range;
+      // gentle camera-space zoom via z-scale so scroll feels dimensional
+      const s = 1 + Math.sin(p * Math.PI) * 0.08;
+      groupRef.current.scale.set(s, 1, s);
     }
 
     // pulse the active node
