@@ -1,18 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/container";
 import { Magnetic } from "@/components/motion/magnetic";
 import { TextReveal } from "@/components/motion/text-reveal";
-
-const HeroMark = dynamic(
-  () => import("@/components/three/hero-mark").then((m) => m.HeroMark),
-  { ssr: false, loading: () => null }
-);
+import { HeroCode } from "@/components/hero-code";
 
 export function Hero() {
   return (
@@ -114,25 +109,10 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* 3D mark */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="relative h-[360px] w-full sm:h-[440px] lg:col-span-5 lg:h-[560px]"
-          >
-            {/* aura ring behind the canvas */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 -z-10"
-              style={{
-                background:
-                  "radial-gradient(50% 50% at 50% 50%, oklch(0.72 0.2 290 / 0.35) 0%, transparent 70%)",
-                filter: "blur(12px)",
-              }}
-            />
-            <HeroMark className="!h-full !w-full" />
-          </motion.div>
+          {/* code editor panel */}
+          <div className="w-full lg:col-span-5">
+            <HeroCode />
+          </div>
         </div>
 
         <motion.div
