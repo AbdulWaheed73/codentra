@@ -9,12 +9,12 @@ import { Container } from "@/components/container";
 import { Magnetic } from "@/components/motion/magnetic";
 import { TextReveal } from "@/components/motion/text-reveal";
 
-const HeroCode = dynamic(
-  () => import("@/components/hero-code").then((m) => m.HeroCode),
+const HeroRobot = dynamic(
+  () => import("@/components/hero-robot").then((m) => m.HeroRobot),
   {
     ssr: false,
     loading: () => (
-      <div className="h-[420px] w-full animate-pulse rounded-2xl border border-border/60 bg-card/40 sm:h-[480px]" />
+      <div className="h-[420px] w-full animate-pulse rounded-2xl border border-border/40 bg-black/[0.96] sm:h-[500px]" />
     ),
   }
 );
@@ -119,9 +119,9 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* code editor panel */}
+          {/* interactive 3D robot */}
           <div className="w-full lg:col-span-5">
-            <HeroCode />
+            <HeroRobot />
           </div>
         </div>
 
