@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
+import { ShaderBackdrop } from "@/components/shader-backdrop";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -65,6 +66,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <ShaderBackdrop />
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
