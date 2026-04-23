@@ -14,7 +14,9 @@ const HeroRobot = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="h-[420px] w-full animate-pulse rounded-2xl border border-border/40 bg-black/[0.96] sm:h-[500px]" />
+      <div className="flex h-[420px] w-full items-center justify-center sm:h-[520px]">
+        <span className="loader" />
+      </div>
     ),
   }
 );
@@ -120,7 +122,7 @@ export function Hero() {
           </div>
 
           {/* interactive 3D robot */}
-          <div className="w-full lg:col-span-5">
+          <div className="relative h-[420px] w-full sm:h-[520px] lg:col-span-5 lg:h-[560px]">
             <HeroRobot />
           </div>
         </div>
