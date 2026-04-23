@@ -75,16 +75,16 @@ const fragmentShader = /* glsl */ `
     darkCol += d4 * smoothstep(0.82, 0.97, n) * 0.25;
 
     // ---------- LIGHT palette ----------
-    // start from near-white, add very soft blue/violet tints so it still has life
-    vec3 l0 = vec3(0.985, 0.99,  1.0);
-    vec3 l1 = vec3(0.93,  0.955, 1.0);
-    vec3 l2 = vec3(0.80,  0.88,  1.0);
-    vec3 l3 = vec3(0.86,  0.82,  1.0);
-    vec3 l4 = vec3(0.72,  0.90,  1.0);
-    vec3 lightCol = mix(l0, l1, smoothstep(0.0, 0.5, n));
-    lightCol = mix(lightCol, l2, smoothstep(0.45, 0.75, n) * 0.55);
-    lightCol = mix(lightCol, l3, smoothstep(0.65, 0.9, n) * 0.35);
-    lightCol = mix(lightCol, l4, smoothstep(0.82, 0.97, n) * 0.25);
+    // punchy enough that the flow actually reads on a pale canvas
+    vec3 l0 = vec3(0.94,  0.96,  1.0);
+    vec3 l1 = vec3(0.74,  0.84,  1.0);
+    vec3 l2 = vec3(0.40,  0.58,  0.98);
+    vec3 l3 = vec3(0.55,  0.42,  0.95);
+    vec3 l4 = vec3(0.28,  0.76,  0.98);
+    vec3 lightCol = mix(l0, l1, smoothstep(0.0, 0.45, n));
+    lightCol = mix(lightCol, l2, smoothstep(0.4, 0.72, n) * 0.85);
+    lightCol = mix(lightCol, l3, smoothstep(0.58, 0.85, n) * 0.55);
+    lightCol = mix(lightCol, l4, smoothstep(0.8, 0.97, n) * 0.35);
 
     vec3 col = mix(lightCol, darkCol, uDark);
 
@@ -109,10 +109,10 @@ const fragmentShader = /* glsl */ `
 
     // vignette
     float vig = smoothstep(1.35, 0.3, length((uv - 0.5) * vec2(aspect, 1.0)));
-    // dark: multiplicative darken at edges. light: gentle fade toward clean-white.
-    col = mix(mix(vec3(0.96, 0.97, 1.0), col, 0.85 + vig * 0.15),
-              col * vig,
-              uDark);
+    vec3 darkVig  = col * vig;
+    // light: only a faint fade to pure white at the far edges so center stays saturated
+    vec3 lightVig = mix(col, vec3(0.98, 0.99, 1.0), (1.0 - vig) * 0.25);
+    col = mix(lightVig, darkVig, uDark);
 
     // film grain
     float grain = hash(uv * uResolution + uTime) - 0.5;
