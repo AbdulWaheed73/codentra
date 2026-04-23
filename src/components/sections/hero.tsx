@@ -1,13 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/container";
 import { Magnetic } from "@/components/motion/magnetic";
 import { TextReveal } from "@/components/motion/text-reveal";
-import { HeroCode } from "@/components/hero-code";
+
+const HeroCode = dynamic(
+  () => import("@/components/hero-code").then((m) => m.HeroCode),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[420px] w-full animate-pulse rounded-2xl border border-border/60 bg-card/40 sm:h-[480px]" />
+    ),
+  }
+);
 
 export function Hero() {
   return (
