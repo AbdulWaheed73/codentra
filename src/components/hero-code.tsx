@@ -196,11 +196,11 @@ function tokenize(code: string, lang: Lang): Token[] {
 }
 
 const KIND_CLASS: Record<TokenKind, string> = {
-  kw:    "text-[#c4b5fd]",
-  str:   "text-[#86efac]",
-  num:   "text-[#fcd34d]",
-  ty:    "text-[#7dd3fc]",
-  deco:  "text-[#fbbf24]",
+  kw:    "text-[#7c3aed] dark:text-[#c4b5fd]",
+  str:   "text-[#15803d] dark:text-[#86efac]",
+  num:   "text-[#b45309] dark:text-[#fcd34d]",
+  ty:    "text-[#0369a1] dark:text-[#7dd3fc]",
+  deco:  "text-[#d97706] dark:text-[#fbbf24]",
   cmt:   "text-muted-foreground/70 italic",
   op:    "text-foreground/60",
   punct: "text-foreground/70",
@@ -305,12 +305,12 @@ export function HeroCode({ className }: { className?: string }) {
         style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d" }}
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        className="relative overflow-hidden rounded-2xl border border-white/10 bg-[oklch(0.13_0.02_265_/_0.82)] shadow-[0_30px_80px_-30px_rgba(30,41,120,0.9)] backdrop-blur-xl"
+        className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/85 shadow-xl shadow-primary/10 backdrop-blur-xl dark:shadow-[0_30px_80px_-30px_rgba(30,41,120,0.9)]"
       >
         {/* top highlight edge */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/20 to-transparent"
         />
         {/* gradient-border accent */}
         <div
@@ -328,7 +328,7 @@ export function HeroCode({ className }: { className?: string }) {
         />
 
         {/* window chrome */}
-        <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
           <div className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-full bg-[#ff5f57]/85" />
             <span className="size-2.5 rounded-full bg-[#febc2e]/85" />
@@ -337,7 +337,7 @@ export function HeroCode({ className }: { className?: string }) {
           <div className="hidden truncate font-mono text-[11px] text-muted-foreground sm:block">
             {snippet.filename}
           </div>
-          <div className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-primary">
+          <div className="rounded-full border border-border/60 bg-foreground/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.18em] text-primary">
             {snippet.label}
           </div>
         </div>
@@ -346,7 +346,7 @@ export function HeroCode({ className }: { className?: string }) {
         <div className="relative">
           <pre className="m-0 flex min-h-[340px] overflow-hidden px-0 py-4 font-mono text-[12.5px] leading-[1.65] sm:text-[13px]">
             {/* line gutter — sized to snippet so it doesn't reflow */}
-            <div className="select-none border-r border-white/5 px-3 text-right text-muted-foreground/40">
+            <div className="select-none border-r border-border/50 px-3 text-right text-muted-foreground/50">
               {Array.from({ length: totalLines }, (_, i) => (
                 <div key={i}>{String(i + 1).padStart(2, "0")}</div>
               ))}
@@ -367,7 +367,7 @@ export function HeroCode({ className }: { className?: string }) {
         </div>
 
         {/* footer */}
-        <div className="flex items-center justify-between gap-3 border-t border-white/10 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">
+        <div className="flex items-center justify-between gap-3 border-t border-border/60 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80">
           <div className="flex items-center gap-3">
             <span className="inline-flex items-center gap-1.5">
               <span className="inline-block size-1.5 rounded-full bg-emerald-400/85 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
@@ -383,7 +383,7 @@ export function HeroCode({ className }: { className?: string }) {
                   key={i}
                   className={cn(
                     "block h-1 rounded-full transition-all",
-                    i === snippetIdx ? "w-5 bg-primary" : "w-1.5 bg-white/15"
+                    i === snippetIdx ? "w-5 bg-primary" : "w-1.5 bg-foreground/20"
                   )}
                 />
               ))}

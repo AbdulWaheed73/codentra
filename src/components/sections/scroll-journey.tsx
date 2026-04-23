@@ -98,7 +98,7 @@ function ChapterRow({
     <div
       ref={rowRef}
       className={cn(
-        "relative flex min-h-[92vh] items-center",
+        "relative flex min-h-[70vh] items-center py-16 md:min-h-[92vh] md:py-0",
         side === "left" ? "justify-start" : "justify-end"
       )}
     >

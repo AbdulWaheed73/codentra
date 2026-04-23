@@ -11,7 +11,7 @@ import { HeroCode } from "@/components/hero-code";
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-[92vh] items-center overflow-hidden pb-16 pt-10">
+    <section className="relative flex min-h-[72vh] items-center overflow-hidden pb-16 pt-10 md:min-h-[92vh]">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10 bg-grid-sm bg-radial-fade opacity-30"

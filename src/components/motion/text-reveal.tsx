@@ -27,7 +27,7 @@ export function TextReveal({
         return (
           <span
             key={`${word}-${wi}`}
-            className="inline-block overflow-hidden whitespace-nowrap align-bottom"
+            className="inline-block whitespace-nowrap pb-[0.05em] [clip-path:inset(-0.05em_-0.05em_-0.3em_-0.05em)]"
           >
             {chars.map((c, ci) => {
               const idx = charIndex++;

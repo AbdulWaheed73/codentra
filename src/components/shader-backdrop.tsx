@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type MutableRefObject } from "react";
+import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useScroll, useMotionValueEvent } from "framer-motion";
@@ -18,6 +18,7 @@ const fragmentShader = /* glsl */ `
   varying vec2 vUv;
   uniform float uTime;
   uniform float uScroll;
+  uniform float uDark;
   uniform vec2  uMouse;
   uniform vec2  uResolution;
 
@@ -51,7 +52,6 @@ const fragmentShader = /* glsl */ `
     float aspect = uResolution.x / uResolution.y;
     vec2 p = vec2((uv.x - 0.5) * aspect, uv.y - 0.5) * 2.2;
 
-    // domain-warped flow field (tech-y, slow drift)
     float t = uTime * 0.05 + uScroll * 1.4;
     vec2 q = vec2(
       fbm(p + vec2(0.0, t)),
@@ -63,41 +63,60 @@ const fragmentShader = /* glsl */ `
     );
     float n = fbm(p + 3.5 * r);
 
-    // color ramp — near-black navy → deep blue → bright blue → violet → cyan sparkle
-    vec3 c0 = vec3(0.012, 0.018, 0.045);
-    vec3 c1 = vec3(0.03,  0.07,  0.22);
-    vec3 c2 = vec3(0.12,  0.38,  0.95);
-    vec3 c3 = vec3(0.55,  0.22,  1.0);
-    vec3 c4 = vec3(0.45,  0.85,  1.0);
+    // ---------- DARK palette ----------
+    vec3 d0 = vec3(0.012, 0.018, 0.045);
+    vec3 d1 = vec3(0.03,  0.07,  0.22);
+    vec3 d2 = vec3(0.12,  0.38,  0.95);
+    vec3 d3 = vec3(0.55,  0.22,  1.0);
+    vec3 d4 = vec3(0.45,  0.85,  1.0);
+    vec3 darkCol = mix(d0, d1, smoothstep(0.0, 0.45, n));
+    darkCol = mix(darkCol, d2, smoothstep(0.45, 0.72, n) * 0.9);
+    darkCol = mix(darkCol, d3, smoothstep(0.66, 0.88, n) * 0.55);
+    darkCol += d4 * smoothstep(0.82, 0.97, n) * 0.25;
 
-    vec3 col = mix(c0, c1, smoothstep(0.0, 0.45, n));
-    col = mix(col, c2, smoothstep(0.45, 0.72, n) * 0.9);
-    col = mix(col, c3, smoothstep(0.66, 0.88, n) * 0.55);
-    col += c4 * smoothstep(0.82, 0.97, n) * 0.25;
+    // ---------- LIGHT palette ----------
+    // start from near-white, add very soft blue/violet tints so it still has life
+    vec3 l0 = vec3(0.985, 0.99,  1.0);
+    vec3 l1 = vec3(0.93,  0.955, 1.0);
+    vec3 l2 = vec3(0.80,  0.88,  1.0);
+    vec3 l3 = vec3(0.86,  0.82,  1.0);
+    vec3 l4 = vec3(0.72,  0.90,  1.0);
+    vec3 lightCol = mix(l0, l1, smoothstep(0.0, 0.5, n));
+    lightCol = mix(lightCol, l2, smoothstep(0.45, 0.75, n) * 0.55);
+    lightCol = mix(lightCol, l3, smoothstep(0.65, 0.9, n) * 0.35);
+    lightCol = mix(lightCol, l4, smoothstep(0.82, 0.97, n) * 0.25);
 
-    // scroll-driven highlight band (sweeps vertically as you scroll)
+    vec3 col = mix(lightCol, darkCol, uDark);
+
+    // scroll highlight band — add light on dark, subtract on light
     float band = smoothstep(0.0, 0.22, abs(uv.y - fract(uScroll * 1.6)));
-    col += vec3(0.25, 0.55, 1.0) * (1.0 - band) * 0.05;
+    col += mix(vec3(-0.03, -0.04, -0.06), vec3(0.25, 0.55, 1.0) * 0.05, uDark)
+           * (1.0 - band);
 
-    // mouse glow
+    // mouse glow (additive dark / subtractive light)
     vec2 mouseP = vec2((uMouse.x - 0.5) * aspect, uMouse.y - 0.5) * 2.0;
     vec2 curP   = vec2((uv.x  - 0.5) * aspect, uv.y  - 0.5) * 2.0;
     float md = length(curP - mouseP);
-    col += vec3(0.4, 0.65, 1.0) * smoothstep(1.0, 0.0, md) * 0.07;
+    col += mix(vec3(-0.04, -0.05, -0.07), vec3(0.4, 0.65, 1.0) * 0.07, uDark)
+           * smoothstep(1.0, 0.0, md);
 
-    // faint technical grid overlay
+    // technical grid — brighter lines on dark, darker lines on light
     vec2 gridUV = uv * vec2(aspect, 1.0) * 42.0;
     vec2 grid = abs(fract(gridUV) - 0.5);
     float gline = smoothstep(0.47, 0.5, max(grid.x, grid.y));
-    col += vec3(0.18, 0.32, 0.7) * (1.0 - gline) * 0.05;
+    col += mix(vec3(-0.025, -0.03, -0.05), vec3(0.18, 0.32, 0.7) * 0.05, uDark)
+           * (1.0 - gline);
 
     // vignette
     float vig = smoothstep(1.35, 0.3, length((uv - 0.5) * vec2(aspect, 1.0)));
-    col *= vig;
+    // dark: multiplicative darken at edges. light: gentle fade toward clean-white.
+    col = mix(mix(vec3(0.96, 0.97, 1.0), col, 0.85 + vig * 0.15),
+              col * vig,
+              uDark);
 
-    // subtle film grain
+    // film grain
     float grain = hash(uv * uResolution + uTime) - 0.5;
-    col += grain * 0.018;
+    col += grain * mix(0.006, 0.018, uDark);
 
     gl_FragColor = vec4(col, 1.0);
   }
@@ -109,9 +128,11 @@ type MouseRef = MutableRefObject<{ x: number; y: number }>;
 function ShaderPlane({
   scrollRef,
   mouseRef,
+  darkRef,
 }: {
   scrollRef: ScrollRef;
   mouseRef: MouseRef;
+  darkRef: MutableRefObject<number>;
 }) {
   const matRef = useRef<THREE.ShaderMaterial>(null);
 
@@ -121,10 +142,14 @@ function ShaderPlane({
     const u = m.uniforms;
     u.uTime.value = state.clock.elapsedTime;
     u.uScroll.value += (scrollRef.current - u.uScroll.value) * 0.08;
+    u.uDark.value += (darkRef.current - u.uDark.value) * 0.08;
     const tmp = u.uMouse.value as THREE.Vector2;
     tmp.x += (mouseRef.current.x - tmp.x) * 0.06;
     tmp.y += (mouseRef.current.y - tmp.y) * 0.06;
-    (u.uResolution.value as THREE.Vector2).set(state.size.width, state.size.height);
+    (u.uResolution.value as THREE.Vector2).set(
+      state.size.width,
+      state.size.height
+    );
   });
 
   return (
@@ -137,6 +162,7 @@ function ShaderPlane({
         uniforms={{
           uTime: { value: 0 },
           uScroll: { value: 0 },
+          uDark: { value: 1 },
           uMouse: { value: new THREE.Vector2(0.5, 0.5) },
           uResolution: { value: new THREE.Vector2(1, 1) },
         }}
@@ -150,6 +176,8 @@ function ShaderPlane({
 export function ShaderBackdrop() {
   const scrollRef = useRef(0);
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
+  const darkRef = useRef(1);
+  const [mounted, setMounted] = useState(false);
   const { scrollYProgress } = useScroll();
 
   useMotionValueEvent(scrollYProgress, "change", (v) => {
@@ -157,6 +185,15 @@ export function ShaderBackdrop() {
   });
 
   useEffect(() => {
+    setMounted(true);
+    const html = document.documentElement;
+    const syncTheme = () => {
+      darkRef.current = html.classList.contains("dark") ? 1 : 0;
+    };
+    syncTheme();
+    const obs = new MutationObserver(syncTheme);
+    obs.observe(html, { attributes: true, attributeFilter: ["class"] });
+
     const onMove = (e: MouseEvent) => {
       mouseRef.current = {
         x: e.clientX / window.innerWidth,
@@ -164,26 +201,31 @@ export function ShaderBackdrop() {
       };
     };
     window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      obs.disconnect();
+    };
   }, []);
+
+  if (!mounted) return null;
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10">
       <Canvas
         dpr={[1, 1.5]}
-        gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
+        gl={{
+          antialias: false,
+          alpha: false,
+          powerPreference: "high-performance",
+        }}
         className="!h-full !w-full"
       >
-        <ShaderPlane scrollRef={scrollRef} mouseRef={mouseRef} />
+        <ShaderPlane
+          scrollRef={scrollRef}
+          mouseRef={mouseRef}
+          darkRef={darkRef}
+        />
       </Canvas>
-      {/* soft CSS overlay: center vignette for readability + subtle noise */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(65% 70% at 50% 45%, transparent 0%, oklch(0.05 0.01 265 / 0.55) 100%)",
-        }}
-      />
     </div>
   );
 }
