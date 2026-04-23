@@ -136,11 +136,13 @@ function ChapterRow({
           viewport={{ once: false, margin: "-25% 0px -25% 0px", amount: 0.3 }}
           transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
           className={cn(
-            "col-span-1 w-full max-w-md sm:max-w-sm md:col-span-6 md:max-w-none",
-            side === "left" ? "md:col-start-1" : "md:col-start-7 md:ml-auto"
+            "col-span-1 w-full md:col-span-7 md:max-w-none lg:col-span-6",
+            side === "left"
+              ? "md:col-start-1"
+              : "md:col-start-6 md:ml-auto lg:col-start-7"
           )}
         >
-          <div className="gradient-border relative rounded-2xl bg-card/70 p-6 backdrop-blur-xl sm:p-7">
+          <div className="gradient-border relative rounded-2xl bg-card/85 p-6 backdrop-blur-xl sm:p-7">
             <div className="mb-4 flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               <span className="inline-flex items-center gap-2">
                 <span className="inline-flex size-1.5 rounded-full bg-gradient-tech" />
